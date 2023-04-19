@@ -1,5 +1,12 @@
 const Posts = require("../models/Post");
-const {SERVER_ERROR} = require("../enums/error")
+const { SERVER_ERROR, BAD_REQUEST } = require("../enums/error");
+const Joi = require("joi");
+
+const PostValidations = Joi.object().keys({
+  PostTitle: Joi.string().required().min(4).max(20),
+  PostBody: Joi.string().required().min(6),
+  PostedBy: Joi.number().required(),
+});
 
 const GetPosts = async (req, res, next) => {
   try {
@@ -7,17 +14,24 @@ const GetPosts = async (req, res, next) => {
       res.locals.Posts = allPost;
       next();
     });
-  }catch (error) {
-     next({ error: { status: SERVER_ERROR, message: error } });
+  } catch (error) {
+    next({ error: { status: SERVER_ERROR, message: error } });
   }
 };
 
 const AddPosts = async (req, res, next) => {
   try {
-    Posts.create(req.body).then((AddedPost) => {
-      res.locals.AddedPost = AddedPost;
-      next();
-    });
+    let { error } = PostValidations.validate(req.body);
+    if (error) {
+      next({ error: { status: BAD_REQUEST, message: error.message } });
+    }
+    else{
+      Posts.create(req.body).then((AddedPost) => {
+        res.locals.AddedPost = AddedPost;
+        next();
+      });
+    }
+    
   } catch (error) {
     next({ error: { status: SERVER_ERROR, message: error } });
   }
@@ -32,7 +46,7 @@ const UpdatePosts = async (req, res, next) => {
     });
     res.locals.updated_post = `Post Id:${req.query.PostId} Updated SuccessFully`;
     next();
-  }catch (error) {
+  } catch (error) {
     next({ error: { status: SERVER_ERROR, message: error } });
   }
 };
@@ -48,8 +62,7 @@ const DeletePosts = async (req, res, next) => {
 
     next();
   } catch (error) {
-    if (error.errors)
-    next({ error: { status: SERVER_ERROR, message: error } });
+    if (error.errors) next({ error: { status: SERVER_ERROR, message: error } });
   }
 };
 
