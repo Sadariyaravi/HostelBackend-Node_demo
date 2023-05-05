@@ -1,5 +1,10 @@
 const Roles = require("../models/role");
-const { SERVER_ERROR } = require("../enums/error");
+const { SERVER_ERROR, BAD_REQUEST } = require("../enums/error");
+const Joi = require("joi");
+
+const RoleValidation = Joi.object().keys({
+  Role: Joi.string().required(),
+});
 
 const GetRoles = async (req, res, next) => {
   try {
@@ -15,10 +20,16 @@ const GetRoles = async (req, res, next) => {
 const AddRoles = async (req, res, next) => {
   console.log(req.body);
   try {
-    Roles.create(req.body).then((AddedRoles) => {
-      res.locals.AddedRoles = AddedRoles;
-    });
-    next();
+    let error = RoleValidation.validate();
+
+    if (error) {
+      next({ error: { status: BAD_REQUEST, message: error } });
+    } else {
+      Roles.create(req.body).then((AddedRoles) => {
+        res.locals.AddedRoles = AddedRoles;
+      });
+      next();
+    }
   } catch (error) {
     next({ error: { status: SERVER_ERROR, message: error } });
   }

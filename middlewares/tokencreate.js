@@ -14,7 +14,7 @@ const generateToken = async (req, res, next) => {
   };
 
   let token = jwt.sign(credential, process.env.JWT_SECRET_KEY, {
-    expiresIn: "1800s",
+    expiresIn: "1d",
   });
   res.locals.token = token;
   next();

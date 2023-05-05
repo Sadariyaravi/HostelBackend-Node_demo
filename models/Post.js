@@ -1,7 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequalize = require("../config/db.connection");
 
-
 const Posts = sequalize.define("Posts", {
   PostTitle: {
     type: DataTypes.TEXT,
@@ -13,6 +12,10 @@ const Posts = sequalize.define("Posts", {
   },
   PostedBy: {
     type: DataTypes.INTEGER,
+    allownull: false,
+  },
+  PostImageLink: {
+    type: DataTypes.TEXT,
     allownull: false,
   },
 });
